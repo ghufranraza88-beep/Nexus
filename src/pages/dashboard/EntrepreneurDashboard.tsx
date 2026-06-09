@@ -10,6 +10,7 @@ import { useAuth } from '../../context/AuthContext';
 import { CollaborationRequest } from '../../types';
 import { getRequestsForEntrepreneur } from '../../data/collaborationRequests';
 import { investors } from '../../data/users';
+import { MeetingCalendar } from '../../components/calendar/MeetingCalendar';
 
 export const EntrepreneurDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -113,6 +114,32 @@ export const EntrepreneurDashboard: React.FC = () => {
           </CardBody>
         </Card>
       </div>
+      <Card>
+  <CardHeader>
+    <h2 className="text-lg font-medium text-gray-900">
+      Meeting Calendar
+    </h2>
+  </CardHeader>
+
+  <CardBody>
+    <MeetingCalendar />
+  </CardBody>
+  </Card>
+  <Card>
+   <CardHeader>
+    <h2 className="text-lg font-medium text-gray-900">
+      Confirmed Meetings
+    </h2>
+   </CardHeader>
+
+   <CardBody>
+    <ul className="space-y-2">
+      <li>📅 Investor Pitch Meeting - 12 June</li>
+      <li>📅 Startup Review Session - 15 June</li>
+      <li>📅 Funding Discussion - 18 June</li>
+    </ul>
+   </CardBody>
+  </Card>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Collaboration requests */}
