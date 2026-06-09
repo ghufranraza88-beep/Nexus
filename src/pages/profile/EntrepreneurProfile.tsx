@@ -8,6 +8,7 @@ import { Badge } from '../../components/ui/Badge';
 import { useAuth } from '../../context/AuthContext';
 import { findUserById } from '../../data/users';
 import { createCollaborationRequest, getRequestsFromInvestor } from '../../data/collaborationRequests';
+import { createMeetingRequest, getSlotsForEntrepreneur, getMeetingRequestsFromInvestor } from '../../data/meetings';
 import { Entrepreneur } from '../../types';
 
 export const EntrepreneurProfile: React.FC = () => {
@@ -32,9 +33,12 @@ export const EntrepreneurProfile: React.FC = () => {
   const isCurrentUser = currentUser?.id === entrepreneur.id;
   const isInvestor = currentUser?.role === 'investor';
   
-  // Check if the current investor has already sent a request to this entrepreneur
+  const availableSlots = getSlotsForEntrepreneur(entrepreneur.id);
   const hasRequestedCollaboration = isInvestor && id 
     ? getRequestsFromInvestor(currentUser.id).some(req => req.entrepreneurId === id)
+    : false;
+  const hasRequestedMeeting = isInvestor && currentUser && id
+    ? getMeetingRequestsFromInvestor(currentUser.id).some(req => req.entrepreneurId === id && req.status === 'pending')
     : false;
   
   const handleSendRequest = () => {
@@ -45,8 +49,18 @@ export const EntrepreneurProfile: React.FC = () => {
         `I'm interested in learning more about ${entrepreneur.startupName} and would like to explore potential investment opportunities.`
       );
       
-      // In a real app, we would refresh the data or update state
-      // For this demo, we'll force a page reload
+      window.location.reload();
+    }
+  };
+
+  const handleSendMeetingRequest = (slotId: string) => {
+    if (isInvestor && currentUser && id) {
+      createMeetingRequest(
+        currentUser.id,
+        id,
+        slotId,
+        `I'd like to book a meeting for this slot to discuss ${entrepreneur.startupName} and potential collaboration.`
+      );
       window.location.reload();
     }
   };
@@ -324,26 +338,61 @@ export const EntrepreneurProfile: React.FC = () => {
               </div>
               
               {!isCurrentUser && isInvestor && (
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <p className="text-sm text-gray-500">
-                    Request access to detailed documents and financials by sending a collaboration request.
-                  </p>
-                  
-                  {!hasRequestedCollaboration ? (
-                    <Button
-                      className="mt-3 w-full"
-                      onClick={handleSendRequest}
-                    >
-                      Request Collaboration
-                    </Button>
-                  ) : (
-                    <Button
-                      className="mt-3 w-full"
-                      disabled
-                    >
-                      Request Sent
-                    </Button>
-                  )}
+                <div className="mt-4 pt-4 border-t border-gray-100 space-y-4">
+                  <div>
+                    <p className="text-sm text-gray-500">
+                      Request access to detailed documents and financials by sending a collaboration request.
+                    </p>
+                    {!hasRequestedCollaboration ? (
+                      <Button
+                        className="mt-3 w-full"
+                        onClick={handleSendRequest}
+                      >
+                        Request Collaboration
+                      </Button>
+                    ) : (
+                      <Button
+                        className="mt-3 w-full"
+                        disabled
+                      >
+                        Request Sent
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="rounded-lg border border-gray-200 p-4 bg-gray-50">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900">Available Meeting Slots</h3>
+                        <p className="text-xs text-gray-500">Book a time that works for you.</p>
+                      </div>
+                    </div>
+
+                    {availableSlots.length > 0 ? (
+                      <div className="space-y-3">
+                        {availableSlots.map(slot => (
+                          <div key={slot.id} className="rounded-lg bg-white p-3 border border-gray-200">
+                            <div className="flex items-center justify-between gap-3">
+                              <div>
+                                <p className="text-sm font-semibold text-gray-900">{slot.date} · {slot.time}</p>
+                                <p className="text-xs text-gray-500">{slot.durationMinutes} min</p>
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                disabled={hasRequestedMeeting}
+                                onClick={() => handleSendMeetingRequest(slot.id)}
+                              >
+                                {hasRequestedMeeting ? 'Request Sent' : 'Book'}
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500">No meeting slots are available right now.</p>
+                    )}
+                  </div>
                 </div>
               )}
             </CardBody>

@@ -57,6 +57,24 @@ export interface CollaborationRequest {
   createdAt: string;
 }
 
+export interface AvailabilitySlot {
+  id: string;
+  entrepreneurId: string;
+  date: string;
+  time: string;
+  durationMinutes: number;
+}
+
+export interface MeetingRequest {
+  id: string;
+  investorId: string;
+  entrepreneurId: string;
+  slotId: string;
+  message: string;
+  status: 'pending' | 'accepted' | 'declined';
+  createdAt: string;
+}
+
 export interface Document {
   id: string;
   name: string;
